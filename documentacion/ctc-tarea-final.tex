@@ -1,0 +1,122 @@
+% --------------------------------------------------------------
+% This is all preamble stuff that you don't have to worry about.
+% Head down to where it says "Start here"
+% --------------------------------------------------------------
+ 
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+ 
+\usepackage[margin=1in]{geometry} 
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+ 
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+ 
+\newenvironment{theorem}[2][Teorema]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\newenvironment{definition}[2][Definición]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+\newenvironment{example}[2][Ejemplo]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+ 
+\begin{document}
+ 
+% --------------------------------------------------------------
+%                         Start here
+% --------------------------------------------------------------
+ 
+%\renewcommand{\qedsymbol}{\filledbox}
+ 
+\title{El criptosistema de Merkle-Hellman}
+\author{Anna Piezrak\\Diego Kiedanksi\\Tobias Winkler\\
+Criptografía y Teoría de Códigos, Universidad Complutense de Madrid} %if necessary, replace with your course title
+ 
+\maketitle
+
+\section{Introducción}
+
+Cuando enviamos mensajes por cualquier canal de comunicación siempre nos exponemos al riesgo de que sean leídos por terceras personas antes de llegar a su destino. Supongamos que queremos mandar el mensaje
+$$M = \text{COMPLUTENSE}$$
+a nuestro compañero Bob. Para evitar que Eva, una tercera persona que de alguna manera ha conseguido interceptar $M$ en su camino, sea capaz de entender lo que le queremos decir a Bob, le podemos mandar una versión \emph{cifrada} de $M$, por ejemplo
+$$M' = \text{DPNQMVUFOTF}.$$
+Sin embargo, si hacemos eso tenemos que asegurarnos de que el destinatario Bob es capaz de \emph{descifrarlas} y sería ideal si él fuese la única persona con esa capacidad.
+
+Para ese fin ciframos $M$ de tal manera que el resultado $M'$ dependa de una clave $K$. Más formal, podemos pensar en el cifrado como una función
+$$e_K : \mathbb{M} \rightarrow \mathbb{M}'$$
+que depende de $K$. Aquí $\mathbb{M}$ y $\mathbb{M}'$ serían los espacios de todos los mensajes y mensajes cifrados posibles, respectivamente. En el ejemplo anterior $e_K$ es la función definida por
+$$e_K(m_1\ ...\ m_n) = m_1 + K\ ...\ m_n+K$$
+donde la adición de una letra $m$ más un número entero $K$ significa avanzar $m$ por $K$ posiciones en el alfabeto (posiblemente volviendo de Z a A) y la clave que elegimos fue $K = 1$.
+
+Solo las personas que disponen de $K$ serán capaces de entender, es decir descifrar, el mensaje original $M$. Igual que antes, podemos considerar este proceso como otra función
+$$d_K : \mathbb{M}' \rightarrow \mathbb{M}$$
+nuevamente dependiente de $K$. Entonces, en el ejemplo $d_K$ sería dado por
+$$e_K(m_1\ ...\ m_n) = m_1 - K\ ...\ m_n - K.$$
+
+¡Ahora solo nos tenemos que preocupar de que Bob sepa $K$ y ya estaremos listos para mandarle todos los mensajes que queramos!
+
+\subsection*{Cifrado asimétrico}
+
+¿Pero cómo nos podemos comunicar con Bob para intercambiar $K$? En realidad, eso es equivalente a enviar un mensaje con el contenido $K$ y si ese mensaje es interceptado, entonces la comunicación ya no es segura.
+
+Para evitar este problema se han inventado los \emph{cifrados asimétricos}. Usan por lo menos dos claves, una clave \emph{secreta} $S$ y una clave \emph{pública} $P$. Para que le podamos enviar un mensaje a Bob necesitamos saber su clave pública $P$ y él va a tener que usar su clave privada $S$ para descifrarla.
+
+\section{El cifrado de Merkle-Hellman}
+
+Es un ejemplo de cifrados asimétricos. Antes de explicar como funciona tenemos que introducir un poco de teoría.
+
+\subsection*{El problema de la mochila}
+
+Dado un cojunto finito $M \subset \Z$ y un límite $L \in \Z$, el \emph{problema de la mochila} consiste en encontrar un subconjunto $S \subseteq M$ que maximice $R := \sum_{s \in S}s$ bajo la restricción que $R \leq L$.
+
+Un problema relacionado es el \emph{problema de la suma de subconjuntos}. Aquí la pregunta es: ¿Existe $S \subseteq M$ tal que $\sum_{s \in S}s = L$? Ese problema se puede considerar como un caso especial de él de la mochila y sigue siendo NP-completo. A continuación vamos a referirnos a este problema cuando decimos 'el problema de la mochila'.
+
+En casos especiales, el problema de la mochila es fácil de resolver como vamos a ver enseguida.
+
+\begin{definition}{1}
+Sea $M = \{m_1, ..., m_n\} \subset \Z$ finito y supongamos, sin pérdida de generalidad, que $m_{i+1} \geq m_i$ para $i = 1, ..., n-1$. Si $M$ verifica que
+$$m_{i+1} \geq \sum_{k=1}^im_k$$
+entonces $M$ se llama \emph{mochila supercreciente}.
+\end{definition}
+\textbf{Ejemplo}
+\begin{itemize}
+\item
+$M := \{3, 4, 11, 42\}$ es una mochila supercreciente porque $4 > 3$, $11 > 3 + 4 = 7$ y $42 > 3 + 4 + 11 = 18$.
+
+\item 
+Para $n \in \N$, $M := \{2^0, 2^1, ..., 2^n\}$ también es una mochila supercreciente ya que todo $i \in \N$ verifica que
+$$2^{i+1} - 1 = \sum_{k=0}^i2^k.$$
+\end{itemize}
+Observamos que si $M = \{m_1, ..., m_n\}$ es supercreciente y $m_n \leq L$, entonces si $M$ tiene una solución $S$, es necesario que $m_n \in S$ porque si no, no podremos alcanzar $L$ ya que $m_n$ es mayor que la suma de todos los demás elementos de $M$.
+De esta observación podemos concluir el siguiente algoritmo:
+\vspace{1em}
+\begin{algorithmic}[1]
+\Procedure{SolveSupercreciente}{$\{m_1,...,m_n\}$, $L$}
+\State $S \gets \emptyset$
+\For{$i = n,...,1$}
+	\If{$m_i \leq L$}
+		\State $S \gets S \cup \{m_i\}$
+		\State $L \gets L - m_i$
+	\EndIf
+\EndFor
+\State \textbf{return} $S$
+\EndProcedure
+\end{algorithmic}
+\vspace{1em}
+El algoritmo asuma que $M = \{m_1,...,m_n\}$ es una mochila supercreciente y que los $m_i$ están en orden ascendiente. Su complejidad de tiempo es $O(n)$ (lineal en $n$) porque consiste de un solo bucle de exactamente $n$ iteraciones.
+
+\subsection*{Cifrar y la clave pública}
+
+\subsection*{Descifrar y la clave secreta}
+
+
+
+ 
+% --------------------------------------------------------------
+%     You don't have to mess with anything below this line.
+% --------------------------------------------------------------
+ 
+\end{document}
