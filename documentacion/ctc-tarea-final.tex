@@ -112,6 +112,17 @@ El algoritmo asuma que $M = \{m_1,...,m_n\}$ es una mochila supercreciente y que
 
 \subsection*{Descifrar y la clave secreta}
 
+\section{Implementación}
+
+Hemos implementado el sistema de Merkle-Hellman en Python (usando la librería Sage???). Existen los programas de consola \textbf{generate-keys}, \textbf{encrypt} y \textbf{decrypt} que se utilizan como se explica a continuación:
+
+\begin{itemize}
+	\item \textbf{generate-keys [k]}: Crea dos archivos \textit{privkey} y \textit{pubkey} que forman una pareja de claves. Se van a generar claves (mochilas) de longitud $16k$. El valor por defecto de $k$ es ???.
+	\item \textbf{encrypt message key}: Genera el archivo \textit{message\_encrypted} que se obtiene cifrando el mensaje \textit{message} con la clave pública \textit{key}.
+	\item \textbf{decrypt message key}: Genera el archivo \textit{message\_decrypted} que es el resultado de descifrar el mensaje \textit{message} con la clave secreta \textit{key}.
+\end{itemize}
+Aparte de esto también creamos el programa \textbf{brute-force} que, dado un mensaje cifrado y la clave pública, intenta reconstruir el mensaje original resolviendo el problema de la mochila \emph{no supercreciente} tras probar todas las posibles combinaciones. Este programa solo sirve para evaluar la seguridad y no forma parte de criptosistema.
+
 
 
  
