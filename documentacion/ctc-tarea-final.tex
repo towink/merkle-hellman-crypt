@@ -61,7 +61,7 @@ $$e_K(m_1\ ...\ m_n) = m_1 - K\ ...\ m_n - K.$$
 
 ¿Pero cómo nos podemos comunicar con Bob para intercambiar $K$? En realidad, eso es equivalente a enviar un mensaje con el contenido $K$ y si ese mensaje es interceptado, entonces la comunicación ya no es segura.
 
-Para evitar este problema se han inventado los \emph{cifrados asimétricos}. Usan por lo menos dos claves, una clave \emph{secreta} $S$ y una clave \emph{pública} $P$. Para que le podamos enviar un mensaje a Bob necesitamos saber su clave pública $P$ y él va a tener que usar su clave privada $S$ para descifrarla.
+Para evitar este problema se han inventado los \emph{cifrados asimétricos}. Usan por lo menos dos claves, una clave \emph{secreta} $S$ y una clave \emph{pública} $P$. Para que le podamos enviar un mensaje a Bob necesitamos saber su clave pública $P$ y él va a tener que usar su clave privada $S$ para descifrarla. Con la notación de antes, el cifrado es una función $e_P$ dependiente de $P$ y el descifrado es $d_S$ que depende de $S$. El cifrado debe ser tal que sea muy difícil (en la práctica imposible) invertir $e_P$ solo conociendo la clave pública $P$.
 
 \section{El cifrado de Merkle-Hellman}
 
@@ -126,14 +126,16 @@ $$B' = 101 + 113 + 232 + 363 + 56 = 865$$
 Para cifrar solo se necesita la mochila transformada $M'$, por eso la clave pública es $K_P = M'$.
 
 \subsection*{Descifrar y la clave secreta}
-
+Como da igual si primero sumamos y después tomamos modulo o al revés, la siguiente equivalencia es correcta:
 $$B' = \sum_{i=1}^nb_i(rm_i \text{ mod } q) \equiv r\big(\sum_{i=1}^nb_im_i\big)\text{ mod } q$$
 y entonces
 $$\sum_{i=1}^nb_im_i \equiv r^{-1} \cdot B' \text{ mod } q.$$
+$r^{-1}$ existe porque $mcd(r,q) = 1$. Ahora para averiguar los $b_i$ solo tenemos que resolver el problema de mochila con $M$ supercreciente y eso se puede hacer muy rápido como hemos visto antes.
 
 \begin{example}
+...
 \end{example}
-Para descifrar se necesita $r, q$ y la mochila original $M$, por lo tanto tenemos la clave secreta $K_S = (M, r, q)$.
+Para descifrar se necesita $r^{-1}, q$ y la mochila original $M$, por lo tanto tenemos la clave secreta $K_S = (M, r^{-1}, q)$.
 
 \section{Implementación}
 
