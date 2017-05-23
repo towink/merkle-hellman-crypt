@@ -20,7 +20,7 @@
 \newenvironment{definition}[2][Definición]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
 
-\newenvironment{example}[2][Ejemplo]{\begin{trivlist}
+\newenvironment{example}[1][Ejemplo]{\begin{trivlist}
 \item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
  
 \begin{document}
@@ -55,7 +55,6 @@ Solo las personas que disponen de $K$ serán capaces de entender, es decir desci
 $$d_K : \mathbb{M}' \rightarrow \mathbb{M}$$
 nuevamente dependiente de $K$. Entonces, en el ejemplo $d_K$ sería dado por
 $$e_K(m_1\ ...\ m_n) = m_1 - K\ ...\ m_n - K.$$
-
 ¡Ahora solo nos tenemos que preocupar de que Bob sepa $K$ y ya estaremos listos para mandarle todos los mensajes que queramos!
 
 \subsection*{Cifrado asimétrico}
@@ -110,7 +109,31 @@ El algoritmo asuma que $M = \{m_1,...,m_n\}$ es una mochila supercreciente y que
 
 \subsection*{Cifrar y la clave pública}
 
+Para cifrar un bloque $B = b_1...b_n$ de $n$ bits tomamos una mochila supercreciente $M = \{m_1, ..., m_n\}$ de longitud $n$. Entonces eligimos dos números $q, r \in \Z$ tal que $q > \sum_{i=1}^nm_i$, $r > 1$ y el máximo común divisor de $q$ y $r$ sea $1$. Llamamos \emph{modulo} a $q$ y \emph{multiplicador} a $r$. Calculamos
+$$M' = \{m_1', ..., m_n'\} = \{r m_1 \text{ mod } q, ..., r m_n \text{ mod } q\}.$$
+Es importante entender que $M'$ en general ya no es supercreciente debido a las operaciones de modulo. Obtenemos el bloque cifrado $B'$ sumando aquellos elementos de $M'$ cuyos indices corresponden a los bits que valen uno en nuestro bloque $B$, es decir hacemos la suma
+$$B' = \sum_{i=1}^nb_im_i'.$$
+$B'$ es un solo número en $\Z$.
+
+\begin{example}
+Supongamos que queremos cifrar el número 157. Su representación binaria es $B = 10011101$. Entonces, como explicado antes, tenemos que eligir una mochila supercreciente de longitud $8$, por ejemplo
+$$M = \{1, 3, 6, 11, 27, 53, 111, 213\}$$
+y los números $r$ y $q$. Como la suma de todos los elementos en $M$ es igual a $425$, podemos tomar $q = 499$ y $r = 101$. Como $101$ es primo, $mcd(q,r) = 1$. La mochila $M'$ resultante sería
+$$M' = \{101, 303, 107, 113, 232, 363, 233, 56\}$$
+que claramente no es supercreciente. Ya podemos calcular el bloque cifrado:
+$$B' = 101 + 113 + 232 + 363 + 56 = 865$$
+\end{example}
+Para cifrar solo se necesita la mochila transformada $M'$, por eso la clave pública es $K_P = M'$.
+
 \subsection*{Descifrar y la clave secreta}
+
+$$B' = \sum_{i=1}^nb_i(rm_i \text{ mod } q) \equiv r\big(\sum_{i=1}^nb_im_i\big)\text{ mod } q$$
+y entonces
+$$\sum_{i=1}^nb_im_i \equiv r^{-1} \cdot B' \text{ mod } q.$$
+
+\begin{example}
+\end{example}
+Para descifrar se necesita $r, q$ y la mochila original $M$, por lo tanto tenemos la clave secreta $K_S = (M, r, q)$.
 
 \section{Implementación}
 
