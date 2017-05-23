@@ -1,9 +1,4 @@
-% --------------------------------------------------------------
-% This is all preamble stuff that you don't have to worry about.
-% Head down to where it says "Start here"
-% --------------------------------------------------------------
- 
-\documentclass[12pt]{article}
+ \documentclass[12pt]{article}
 \usepackage[utf8]{inputenc}
  
 \usepackage[margin=1in]{geometry} 
@@ -25,15 +20,10 @@
  
 \begin{document}
  
-% --------------------------------------------------------------
-%                         Start here
-% --------------------------------------------------------------
- 
 %\renewcommand{\qedsymbol}{\filledbox}
  
 \title{El criptosistema de Merkle-Hellman}
-\author{Anna Piezrak\\Diego Kiedanksi\\Tobias Winkler\\
-Criptografía y Teoría de Códigos, Universidad Complutense de Madrid} %if necessary, replace with your course title
+\author{Anna Piezrak\\Diego Kiedanksi\\Tobias Winkler\\Criptografía y Teoría de Códigos\\Universidad Complutense de Madrid} %if necessary, replace with your course title
  
 \maketitle
 
@@ -93,7 +83,7 @@ Observamos que si $M = \{m_1, ..., m_n\}$ es supercreciente y $m_n \leq L$, ento
 De esta observación podemos concluir el siguiente algoritmo:
 \vspace{1em}
 \begin{algorithmic}[1]
-\Procedure{SolveSupercreciente}{$\{m_1,...,m_n\}$, $L$}
+\Procedure{ResolverMochilaSupercreciente}{$\{m_1,...,m_n\}$, $L$}
 \State $S \gets \emptyset$
 \For{$i = n,...,1$}
 	\If{$m_i \leq L$}
@@ -110,7 +100,7 @@ El algoritmo asuma que $M = \{m_1,...,m_n\}$ es una mochila supercreciente y que
 \subsection*{Cifrar y la clave pública}
 
 Para cifrar un bloque $B = b_1...b_n$ de $n$ bits tomamos una mochila supercreciente $M = \{m_1, ..., m_n\}$ de longitud $n$. Entonces eligimos dos números $q, r \in \Z$ tal que $q > \sum_{i=1}^nm_i$, $r > 1$ y el máximo común divisor de $q$ y $r$ sea $1$. Llamamos \emph{modulo} a $q$ y \emph{multiplicador} a $r$. Calculamos
-$$M' = \{m_1', ..., m_n'\} = \{r m_1 \text{ mod } q, ..., r m_n \text{ mod } q\}.$$
+$$M' = \{m_1', ..., m_n'\} = \{r m_1 \text{ mod } q, ..., r m_n \mod q\}.$$
 Es importante entender que $M'$ en general ya no es supercreciente debido a las operaciones de modulo. Obtenemos el bloque cifrado $B'$ sumando aquellos elementos de $M'$ cuyos indices corresponden a los bits que valen uno en nuestro bloque $B$, es decir hacemos la suma
 $$B' = \sum_{i=1}^nb_im_i'.$$
 $B'$ es un solo número en $\Z$.
@@ -127,13 +117,15 @@ Para cifrar solo se necesita la mochila transformada $M'$, por eso la clave púb
 
 \subsection*{Descifrar y la clave secreta}
 Como da igual si primero sumamos y después tomamos modulo o al revés, la siguiente equivalencia es correcta:
-$$B' = \sum_{i=1}^nb_i(rm_i \text{ mod } q) \equiv r\big(\sum_{i=1}^nb_im_i\big)\text{ mod } q$$
-y entonces
-$$\sum_{i=1}^nb_im_i \equiv r^{-1} \cdot B' \text{ mod } q.$$
+$$B' = \sum_{i=1}^nb_i(rm_i \mod q) \equiv r\big(\sum_{i=1}^nb_im_i\big)\mod q$$
+y por lo tanto
+$$\sum_{i=1}^nb_im_i \equiv r^{-1} \cdot B' \mod q.$$
 $r^{-1}$ existe porque $mcd(r,q) = 1$. Ahora para averiguar los $b_i$ solo tenemos que resolver el problema de mochila con $M$ supercreciente y eso se puede hacer muy rápido como hemos visto antes.
 
 \begin{example}
-...
+Tenemos $r^{-1} = 101^{-1}= 84 \mod q$ lo que se puede calcular eficientemente con el algoritmo extendido de Euclides. Entonces,
+$$r^{-1} \cdot B' = 84 \cdot 865 \equiv 305 \mod 499.$$
+Lo único que falta es llamar el algoritmo \textsc{ResolverMochilaSupercreciente}($M, 305$) que nos da el resultado $305 = 1 + 11 + 27 + 53 + 213$. Estos números de la mochila $M$ corresponden precisamente al bloque original $10011101$.
 \end{example}
 Para descifrar se necesita $r^{-1}, q$ y la mochila original $M$, por lo tanto tenemos la clave secreta $K_S = (M, r^{-1}, q)$.
 
@@ -148,11 +140,5 @@ Hemos implementado el sistema de Merkle-Hellman en Python (usando la librería S
 \end{itemize}
 Aparte de esto también creamos el programa \textbf{brute-force} que, dado un mensaje cifrado y la clave pública, intenta reconstruir el mensaje original resolviendo el problema de la mochila \emph{no supercreciente} tras probar todas las posibles combinaciones. Este programa solo sirve para evaluar la seguridad y no forma parte de criptosistema.
 
-
-
- 
-% --------------------------------------------------------------
-%     You don't have to mess with anything below this line.
-% --------------------------------------------------------------
  
 \end{document}
