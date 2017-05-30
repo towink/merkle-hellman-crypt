@@ -59,15 +59,22 @@ Para evitar este problema se han inventado los \emph{cifrados asimétricos}. Usa
 
 \section{El cifrado de Merkle-Hellman}
 
-Este criptosisteme es un ejemplo de cifrados asimétricos. Fue inventado por Merkle y Hellman en 1976 (referencia). Antes de explicar como funciona tenemos que introducir un poco de teoría.
+Este criptosisteme es un ejemplo de cifrados asimétricos. Fue inventado por Merkle y Hellman en 1976 \cite{merkle1978}. Fue roto en 1984 por A. Shamir que presentó un algoritmo eficiente (polinomial) que es capaz de recuperar el texto cifrado solo a partir de la clave pública con alta probabilidad \cite{shamir1984}. Por lo tanto, este sistema \emph{ya no se debe usar en la práctica}. (??Más abajo veremos como se puede mejorar el sistema para recuperar la seguridad??) Antes de explicar como funciona tenemos que introducir un poco de teoría.
 
 \subsection*{El problema de la mochila}
 
-Dado un cojunto finito $M \subset \Z$ y un límite $L \in \Z$, el \emph{problema de la mochila} consiste en encontrar un subconjunto $S \subseteq M$ que maximice $R := \sum_{s \in S}s$ bajo la restricción que $R \leq L$.
+Una variante del \emph{problema de la mochila} es la siguiente cuestión: Dado una secuencia $M = m_1, ..., m_n$ de números enteros positivos (la \emph{mochila}) y un \emph{límite} $L$, ¿existen indices $I \subseteq \{1,...,n\}$ tal que $\sum_{i \in I}m_i = L$? Y si existen, ¿cuáles son? Esto también se conoce como el \emph{problema de la suma de subconjuntos}.
 
-Un problema relacionado es el \emph{problema de la suma de subconjuntos}. Aquí la pregunta es: ¿Existe $S \subseteq M$ tal que $\sum_{s \in S}s = L$? Ese problema se puede considerar como un caso especial de él de la mochila y sigue siendo NP-completo. A continuación vamos a referirnos a este problema cuando decimos 'el problema de la mochila'.
+\begin{example}
+Considera $M = 13, 1, 6, 3, 10$. Si $L = 20$, entonces el problema de la mochila relacionado tiene solución ya que $1+6+3+10 = 20$. Por otra parte, si $L = 8$ no tiene solución porque ninguna combinación de estos cinco números da $8$ en su suma.
+\end{example}
+%, el \emph{problema de la mochila} consiste en encontrar un subconjunto $S \subseteq M$ que maximice $R := \sum_{s \in S}s$ bajo la restricción que $R \leq L$.
+%Un problema relacionado es el \emph{problema de la suma de subconjuntos}. Aquí la pregunta es: ¿Existe $S \subseteq M$ tal que $\sum_{s \in S}s = L$? Ese problema se puede considerar como un caso especial de él de la mochila y sigue siendo NP-completo. A continuación vamos a referirnos a este problema cuando decimos 'el problema de la mochila'.
+Se ha demostrado que el problema de la mochila es NP-completo. El algoritmo más simple para resolverlo prueba todas las $2^n$ posible combinaciones de elementos de $M$. Para cada combinación el algoritmo tiene que sumar como máximo $n$ números. Sumar dos números de $r$ bit son se hace en $O(r)$ operaciones, y por lo tanto este algoritmo trivial está en $O(nr2^n)$ si los tamaños en bit de los números en $M$ están limitados por $r$. Como este algoritmo es exponencial en $n$, no se puede aplicar si $n$ es suficientemente grande. Existen mejores algoritmos que este pero el hecho de que el problema es NP-completo nos asegura que ninguno de ellos es polinomial (lo que no significa que no puede haber algoritmos que sean eficientes en muchos casos).
 
-El algoritmo más simple prueba todas las $2^n$ posible combinaciones de elementos de $M$. Para cada combinación el algoritmo tiene que sumar como máximo $n$ números. Sumar dos números de $r$ bit son se hace en $O(r)$ operaciones, y por lo tanto este algoritmo trivial está en $O(nr2^n)$ si los tamaños en bit de los números en $M$ están limitados por $r$. Como este algoritmo es exponencial en $n$, no se puede aplicar si $n$ es suficientemente grande.
+Como vamos a ver, la seguridad del cifrado se va a basar en la dificultad de resolver el problema de la mochila.
+
+\subsection*{Mochilas supercrecientes}
 
 En casos especiales, el problema de la mochila es fácil de resolver como vamos a ver enseguida.
 
@@ -79,21 +86,13 @@ entonces $M$ se llama \emph{mochila supercreciente (MS)}.
 \textbf{Ejemplo}
 \begin{itemize}
 \item
-$M := \{3, 4, 11, 42\}$ es una MS porque $4 > 3$, $11 > 3 + 4 = 7$ y $42 > 3 + 4 + 11 = 18$.
+$M := 3, 4, 11, 42$ es una MS porque $4 > 3$, $11 > 3 + 4 = 7$ y $42 > 3 + 4 + 11 = 18$.
 
 \item 
-Para $n \in \N$, $M := \{2^0, 2^1, ..., 2^n\}$ también es una mochila supercreciente ya que todo $i \in \N$ verifica que
+Para $n \in \N$, $M := 2^0, 2^1, ..., 2^n$ también es una mochila supercreciente ya que todo $i \in \N$ verifica que
 $$2^{i+1} - 1 = \sum_{k=0}^i2^k.$$
 \end{itemize}
-La secuencia del último ejemplo es la 'menor' MS posible, es decir todos los elementos verifican que $m_i \geq 2^{i-1}$. Esto implica que los elementos de cualquier MS de longitud $n$ se representan con por lo menos $n-1$ bits y su suma tiene al menos $n$ bits.
-
-Se puede generar mochilas supercrecientes aleatoriamente de la siguiente manera: Se elige un parametro $\texttt{salto}\ > 1$. Sean $a_1, ..., a_n$ elementos tomados de la distribución uniforme de los números enteros de $1$ a \texttt{salto}. Definimos $m_1 := a_1$ y $m_{i+1} := a_{i+1} + \sum_k^n m_{k}$. Entonces $m_n \leq \texttt{salto} \cdot 2^{n-1}$ por inducción:
-\begin{itemize}
-	\item $n = 1$: $m_1 \leq \texttt{salto}$ es correcto
-	\item $n > 1$:
-	$$m_{n} = a_n + \sum_{k=1}^{n-1} m_{k} \leq a_n + \texttt{salto} \cdot \sum_{k=1}^{n-1}2^{k-1} \leq \texttt{salto} + \texttt{salto} \cdot ( 2^{n-1} - 1) = \texttt{salto} \cdot 2^{n-1}$$
-\end{itemize}
-Entonces, el tamanio en bit de los $m_i$ no es más de $log_2(\texttt{salto}) + (n-1)$.
+La secuencia del último ejemplo es la 'menor' MS posible, es decir todos los elementos $m_i$ de cualquier MS verifican que $m_i \geq 2^{i-1}$. Esto implica que los elementos de todas las MS de longitud $n$ se representan con por lo menos $n-1$ bits y su suma tiene al menos $n$ bits.
 
 Observamos que si $M = m_1, ..., m_n$ es supercreciente y $m_n \leq L$, entonces si $M$ tiene una solución, es necesario que $m_n$ esté en la solución porque si no, no podremos alcanzar $L$ ya que $m_n$ es mayor que la suma de todos los demás elementos de $M$.
 De esta observación podemos concluir el siguiente algoritmo:
@@ -115,11 +114,19 @@ El algoritmo asuma que $M = m_1,...,m_n$ es una mochila supercreciente y que los
 
 \subsection*{Cifrar y la clave pública}
 
-Para cifrar un bloque $B = b_1...b_n$ de $n$ bits tomamos una mochila supercreciente $M = \{m_1, ..., m_n\}$ de longitud $n$. Entonces eligimos dos números $q, r \in \Z$ tal que $q > \sum_{i=1}^nm_i$, $r > 1$ y el máximo común divisor de $q$ y $r$ sea $1$. Llamamos \emph{modulo} a $q$ y \emph{multiplicador} a $r$. Calculamos
+Para cifrar un bloque $B = b_1...b_n$ de $n$ bits tomamos una mochila supercreciente $M = m_1, ..., m_n$ de longitud $n$. Entonces eligimos dos números $q, r \in \Z$ tal que $q > \sum_{i=1}^nm_i$, $r > 1$ y el máximo común divisor de $q$ y $r$ sea $1$. Llamamos \emph{modulo} a $q$ y \emph{multiplicador} a $r$. Se sugerieron valores alrededor de $n = 100$ y $q$ de $200$ bits. Calculamos
 $$M' = \{m_1', ..., m_n'\} = \{r m_1 \text{ mod } q, ..., r m_n \mod q\}.$$
 Es importante entender que $M'$ en general ya no es supercreciente debido a las operaciones de modulo. Obtenemos el bloque cifrado $B'$ sumando aquellos elementos de $M'$ cuyos indices corresponden a los bits que valen uno en nuestro bloque $B$, es decir hacemos la suma
 $$B' = \sum_{i=1}^nb_im_i'.$$
 $B'$ es un solo número en $\Z$.
+
+¿Cómo obtenemos una mochila supercreciente? Se puede generar una MS aleatoriamente de la siguiente manera: Se elige un parametro $\texttt{salto}\ > 1$. Sean $a_1, ..., a_n$ elementos tomados de la distribución uniforme de los números enteros de $1$ a \texttt{salto}. Definimos $m_1 := a_1$ y $m_{i+1} := a_{i+1} + \sum_k^n m_{k}$. Entonces $m_i \leq \texttt{salto} \cdot 2^{i-1}$ por inducción:
+\begin{itemize}
+	\item $i = 1$: $m_1 \leq \texttt{salto}$ es correcto
+	\item $i > 1$:
+	$$m_{i} = a_i + \sum_{k=1}^{i-1} m_{k} \leq a_i + \texttt{salto} \cdot \sum_{k=1}^{i-1}2^{k-1} \leq \texttt{salto} + \texttt{salto} \cdot ( 2^{i-1} - 1) = \texttt{salto} \cdot 2^{i-1}$$
+\end{itemize}
+Entonces, el tamanio en bit de los $m_i$ no es más de $log_2(\texttt{salto}) + (i-1)$.
 
 \begin{example}
 Supongamos que queremos cifrar el número 157. Su representación binaria es $B = 10011101$. Entonces, como explicado antes, tenemos que eligir una mochila supercreciente de longitud $8$, por ejemplo
@@ -141,7 +148,7 @@ $r^{-1}$ existe porque $mcd(r,q) = 1$. Ahora para averiguar los $b_i$ solo tenem
 \begin{example}
 Tenemos $r^{-1} = 101^{-1}= 84 \mod q$ lo que se puede calcular eficientemente con el algoritmo extendido de Euclides. Entonces,
 $$r^{-1} \cdot B' = 84 \cdot 865 \equiv 305 \mod 499.$$
-Lo único que falta es llamar el algoritmo \textsc{ResolverMochilaSupercreciente}($M, 305$) que nos da el resultado $305 = 1 + 11 + 27 + 53 + 213$. Estos números de la mochila $M$ corresponden precisamente al bloque original $10011101$.
+Lo único que falta es llamar el algoritmo \textsc{ResolverMS}($M, 305$) que nos da el resultado $305 = 1 + 11 + 27 + 53 + 213$. Estos números de la mochila $M$ corresponden precisamente al bloque original $10011101$.
 \end{example}
 Para descifrar se necesita $r^{-1}, q$ y la mochila original $M$, por lo tanto tenemos la clave secreta $K_S = (M, r^{-1}, q)$.
 
