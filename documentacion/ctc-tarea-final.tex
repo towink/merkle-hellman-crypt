@@ -126,7 +126,9 @@ $B'$ es un solo número en $\Z$.
 	\item $i > 1$:
 	$$m_{i} = a_i + \sum_{k=1}^{i-1} m_{k} \leq a_i + \texttt{salto} \cdot \sum_{k=1}^{i-1}2^{k-1} \leq \texttt{salto} + \texttt{salto} \cdot ( 2^{i-1} - 1) = \texttt{salto} \cdot 2^{i-1}$$
 \end{itemize}
-Entonces, el tamanio en bit de los $m_i$ no es más de $log_2(\texttt{salto}) + (i-1)$.
+Entonces, el tamaño en bit de los $m_i$ no es más de $log_2(\texttt{salto}) + (i-1)$. Lo ideal sería tener un método que genere uniformemente una MS del conjunto de todas las MS con elementos acotados por un límite que queramos. Con nuestro método podemos obtener mochilas con todos los $m_i \leq \texttt{salto} \cdot 2^{n-1}$ como hemos visto, pero no generamos \emph{todas} las posibilidades: Por ejemplo, si $\texttt{salto} = 2$ y $n = 5$, el método garantiza que $m_i \leq 2 \cdot 2^{5-1} = 32$, pero la MS
+$$1,2,4,8,32$$
+es imposible obtener ya que el salto entre $8$ y $32$ es mucho más grande que el mayor salto posible, que es $2$. En realidad el método solo genera un subconjunto relativamente pequeño de todas las posibilidades. Aquí le daríamos a un atacador la posibilidad de pensar como puede aprovechar esta estructura muy específica de nuestras MS. Sin embargo, para la implementación del sistema que solo sirve como demostración del mismo, este método parecía suficiente y adecuado ya que era muy fácil de implementar.
 
 \begin{example}
 Supongamos que queremos cifrar el número 157. Su representación binaria es $B = 10011101$. Entonces, como explicado antes, tenemos que eligir una mochila supercreciente de longitud $8$, por ejemplo
