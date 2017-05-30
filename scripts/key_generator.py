@@ -52,19 +52,23 @@ def mochila_camuflada(mochila, q, r):
 
 if __name__ == "__main__":
 
-    assert len(sys.argv) == 3
+    if len(sys.argv) != 3:
+        print 'incorrect number of arguments'
 
-    N = int(sys.argv[1])
-    jump = int(sys.argv[2])
-    mochila = new_mochila(N, jump)
-    q = select_q(mochila)
-    r, ri = select_r(q)
-    mochila_pub = mochila_camuflada(mochila, q, r)
+    else:        
+        assert len(sys.argv) == 3
 
-    clave_publica = {'Mochila': mochila_pub}
-    clave_privada = {'Mochila' : mochila, 'q': q, 'ri': ri}
-    with open('clave.pub', 'wb') as f:
-        json.dump(clave_publica, f)
+        N = int(sys.argv[1])
+        jump = int(sys.argv[2])
+        mochila = new_mochila(N, jump)
+        q = select_q(mochila)
+        r, ri = select_r(q)
+        mochila_pub = mochila_camuflada(mochila, q, r)
 
-    with open('clave.priv', 'wb') as g:
-        json.dump(clave_privada, g)
+        clave_publica = {'Mochila': mochila_pub}
+        clave_privada = {'Mochila' : mochila, 'q': q, 'ri': ri}
+        with open('clave.pub', 'wb') as f:
+            json.dump(clave_publica, f)
+
+        with open('clave.priv', 'wb') as g:
+            json.dump(clave_privada, g)

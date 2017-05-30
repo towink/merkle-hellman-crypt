@@ -1,28 +1,6 @@
 import json
 import sys
-
-def split2len(s, n=16):
-    def _f(s, n):
-        while s:
-            yield s[:n]
-            s = s[n:]
-    return list(_f(s, n))
-
-
-def text_to_bytes(text, n=0):
-    '''
-
-    '''
-    largo = len(text)
-    if n > 0:
-        text = text + ' ' * (n - (largo % n))
-    text = text.decode('utf8')
-    text_e = ''.join(['{0:016b}'.format(ord(c)) for c in text])
-    return text_e
-
-def bytes_to_text(binary):
-    return ''.join([unichr(int(ch,2)) for ch in split2len(binary)])
-
+from common import split2len, text_to_bytes, bytes_to_text
 
 def unpack(n,l):
     i = len(l) -1
@@ -38,10 +16,12 @@ def unpack(n,l):
             res = 0
         yield res
 
-def decodificar(chunk, mochila_o, q, i_r):
-    message = (chunk * i_r) % q
-    int_message = list(unpack(message,mochila_o))[::-1]
-    return bytes_to_text(''.join(map(str,int_message)))
+def decodificar(chunks, mochila_o, q, i_r):
+    bits = []
+    for chunk in chunks:
+        message = (chunk * i_r) % q
+        bits += list(unpack(message, mochila_o))[::-1]
+    return bytes_to_text(''.join(map(str, bits)))
 
 if __name__ == "__main__":
 
@@ -59,10 +39,7 @@ if __name__ == "__main__":
     with open(mensaje_crp, 'r') as g:
         codificado = list(json.load(g)['Encrypted'])
 
-    s = ''
-    for c in codificado:
-        s += decodificar(c,mochila, q, ri)
-    # print s
+    s = decodificar(codificado, mochila, q, ri)
 
-    with open('mensae_descencriptado.txt', 'wb') as f:
+    with open(mensaje_crp + '.dcrp', 'wb') as f:
         f.write(s)
