@@ -1,0 +1,23 @@
+\begin{thebibliography}{Wei10}
+
+\bibitem[MH78]{merkle1978}
+Ralph Merkle and Martin Hellman.
+\newblock {Hiding information and signatures in trapdoor knapsacks}.
+\newblock {\em IEEE transactions on Information Theory}, 24(5):525--530, 1978.
+
+\bibitem[Sha84]{shamir1984}
+Adi Shamir.
+\newblock {A polynomial-time algorithm for breaking the basic Merkle-Hellman
+  cryptosystem}.
+\newblock {\em IEEE transactions on information theory}, 30(5):699--704, 1984.
+
+\bibitem[Sta]{stamplattice}
+Mark Stamp.
+\newblock Lattice reduction attack on the knapsack.
+
+\bibitem[Wei10]{weisstein2010lattice}
+Eric~W Weisstein.
+\newblock Lattice reduction.
+\newblock 2010.
+
+\end{thebibliography}

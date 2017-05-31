@@ -5,6 +5,7 @@
 \usepackage{amsmath,amsthm,amssymb}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
+\usepackage{graphicx}
  
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
@@ -165,6 +166,71 @@ Hemos implementado el sistema de Merkle-Hellman en Python. Existen los scripts \
 \end{itemize}
 Aparte de esto también creamos el script \textbf{bruteforce} que, dado un mensaje cifrado y la clave pública, intenta reconstruir el mensaje original resolviendo el problema de la mochila \emph{no supercreciente} tras probar todas las posibles combinaciones. Este programa solo sirve para evaluar la seguridad y no forma parte del criptosistema.
 
+\section{Ataque al criptosistema}
+
+El criptosistema de Merkle-Hellman se considera roto pues existe un ataque en tiempo polinomial al mismo. Lo que es más, el ataque está dirigido a la clave pública, por lo que puede realizarse antes de que las claves sean siquiera utilizadas. La explicación está basada en \cite{stamplattice}.
+
+\subsection{Teoría detras del Ataque}
+
+Sea $T = (t_1,t_2,\dots,t_n)$ la clave pública (mochila) y $M = b_0b_1\dots b_n$ un mensaje (númerico) en base 2 a encripar. El mensaje encriptado es $C = b_0t_1 + b_1t_1 + \dots b_nt_n$ y en forma matricial: $TM = C$. Desencriptar el mensaje es equivalente a encontrar un vector $U = (u_1,u_2,\dots, u_n)$ tal que sea solución del sistema $TU = C$.
+
+No es difícil observar que si definimos $V = (U,1)$ y $W = (U,0)$ entonces vale la siguiente ecuación matricial: $MV = W$, donde 
+$$M = \left(\begin{array}{c c}
+I_{nxn} & 0_{nx1} \\ T & -C
+\end{array}\right)$$
+
+Las columnas de $M$ tienen coordenadas enteras y son linealmente independientes (las primeras n coordenadas forman una base más el vector nulo), por lo que $W$ es un elemento del retículo que forman las columnas de $M$. 
+
+Dado que las coordenadas de $W$ son binarias, $||W|| \leq \sqrt{n}$. Está norma es particularmente pequeña en un retículo de coordenadas enteras. 
+
+El algoritmo de Lenstra–Lenstra–Lovász (LatticeReduction en WolframAlpha \cite{weisstein2010lattice}) permite encontrar vectores de norma pequeña en un retículo con coordenadas en $\mathbb{Z}$. La complejidad de dicho algoritmo es $O(d^5 n log^3 B)$ donde $B$ es el máximo de las normas euclídeas de la base.
+
+El algoritmo toma como entrada la matriz $M$ y devuelve una lista de vectores. Una solución aceptable a nuestro problema no siempre es encontrada pues es posible que las entradas de los vectores no pertenezcan a ${0,1}$.
+
+A pesar de esto, la posibilidad de poder romper una gran cantidad de claves hace que el algoritmo no sea seguro.
+
+\subsection{Ejemplo}
+
+Dada la clave pública $T = [576, 2448, 2767, 237, 330, 2100]$ y el mensaje \textbf{Hola}, se representación en utf8 de 16 bits es: \begin{equation}
+\begin{split}
+A = 000000\\
+000100\\
+100000\\
+000000\\
+011011\\
+110000\\
+000001\\
+101100\\
+000000\\
+000110\\
+000100\\
+000000\\
+000010\\
+100000\\
+000000\\
+100000
+\end{split}\end{equation} y encriptado consiste de la lista de bloques $$C = (0, 237, 576, 0, 7645, 3024, 2100, 3580, 0, 567, 237, 0, 330, 576, 0, 576)$$
+
+Veamos como a partir de la lista $C$ podemos recuperar el mensaje $A$. Lo ejemplificaremos con el quinto elemento de $C: 7645$. Construimos la matriz \begin{equation} M_{7645} = \left( \begin{array}{ccccccc}
+1 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
+0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 1 & 0 \\
+576 & 2448 & 2767 & 237 & 330 & 2100 & -7645 
+\end{array} \right) 
+\end{equation}
+
+y utilizamos el algoritmo LLL implementado en Mathematica para obtener la salida (por la implementación de Mathematica debemos suministrar la matriz transpuesta).
+
+En la Figura \ref{wolfram} se puede ver la entrada y la salida del algoritmo. El primer resultado es el que estamos buscando y vemos que coindice con el quinto bloque de $A$ (recordar que hay un 0 al final de sobra).
+
+\begin{figure}
+	\includegraphics[scale=0.7]{salida_lll}
+	\caption{Resultado de la ejecución del algoritmo LLL en Mathematica a la matriz $M_{7645}$}
+	\label{wolfram}
+\end{figure}
 
 \bibliographystyle{alpha}
 \bibliography{references}
